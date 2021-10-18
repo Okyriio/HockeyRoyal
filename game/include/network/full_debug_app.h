@@ -18,7 +18,7 @@ namespace game
 
         void Update(sf::Time dt) override;
 
-        void Destroy() override;
+        void Destroy();
 
         void DrawImGui() override;
 

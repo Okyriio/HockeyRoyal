@@ -21,9 +21,11 @@ namespace game
             }
 
             const auto pos = core::ConvertFromBinary<core::Vec2f>(spawnPlayerPacket->pos);
-            const auto rotation = core::ConvertFromBinary<core::degree_t>(spawnPlayerPacket->angle);
+            const core::Vec2f speed = { 0.0f ,0.0f };
+            const auto radius = 30.0f;
+            const auto mass = 30.0f;
 
-            gameManager_.SpawnPlayer(playerNumber, pos, rotation);
+            gameManager_.SpawnPlayer(playerNumber, pos, radius, speed, mass);
             break;
         }
         case PacketType::START_GAME:
@@ -101,7 +103,6 @@ namespace game
             gameManager_.WinGame(winGamePacket->winner);
             break;
         }
-        case PacketType::SPAWN_BULLET: break;
         default:;
         }
 

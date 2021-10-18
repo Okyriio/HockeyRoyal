@@ -18,7 +18,7 @@ namespace game
 		explicit SimulationServer(std::array<std::unique_ptr<SimulationClient>, 2>& clients);
 		void Init() override;
 		void Update(sf::Time dt) override;
-		void Destroy() override;
+		void Destroy() ;
 		void DrawImGui() override;
 		void PutPacketInReceiveQueue(std::unique_ptr<Packet> packet);
 		void SendReliablePacket(std::unique_ptr<Packet> packet) override;

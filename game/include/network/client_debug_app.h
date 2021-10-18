@@ -22,7 +22,7 @@ class NetworkDebugApp : public core::DrawInterface, public core::DrawImGuiInterf
 
         void Update(sf::Time dt) override;
 
-        void Destroy() override;
+        void Destroy() ;
 
         void DrawImGui() override;
 

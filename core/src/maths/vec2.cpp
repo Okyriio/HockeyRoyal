@@ -35,7 +35,22 @@ namespace core
         y -= v.y;
         return *this;
     }
-
+    Vec2f ComputeNormal(Vec2f center, Vec2f i)
+    {
+        return(i - center).Normalize();
+    }
+    Vec2f ComputeTangent(Vec2f center, Vec2f i)
+    {
+        const Vec2f tangent = ComputeNormal(center, i);
+        return { tangent.y, -tangent.x };
+    }
+    float CalculateDistance(Vec2f a, Vec2f b)
+    {
+        // pythagorus theorem to calculate the distance
+        const float dx = b.x - a.x;
+        const float dy = b.y - a.y;
+        return std::sqrt(dx * dx + dy * dy);
+    }
     Vec2f Vec2f::operator*(float f) const
     {
         return {x * f, y * f};
@@ -56,12 +71,10 @@ namespace core
     return std::sqrt(GetSqrMagnitude());
 }
 
-void Vec2f::Normalize()
-{
-    const auto magnitude = GetMagnitude();
-    x /= magnitude;
-    y /= magnitude;
-}
+    Vec2f Vec2f::Normalize() const
+    {
+        return (*this / Length());
+    }
 
 Vec2f Vec2f::GetNormalized() const
 {

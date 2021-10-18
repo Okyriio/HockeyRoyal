@@ -194,9 +194,10 @@ namespace game
             const auto pos = spawnPositions[p] * 3.0f;
             spawnPlayer->pos = ConvertToBinary(pos);
 
-            const auto rotation = spawnRotations[p];
-            spawnPlayer->angle = core::ConvertToBinary(rotation);
-            gameManager_.SpawnPlayer(p, pos, rotation);
+            const core::Vec2f speed = { 0.0f ,0.0f };
+            const auto radius = 30.0f;
+            const auto mass = 30.0f;
+            gameManager_.SpawnPlayer(p, pos,radius, speed, mass );
 
             SendReliablePacket(std::move(spawnPlayer));
         }

@@ -19,20 +19,21 @@ struct Vec2f
 
 
     [[nodiscard]] float GetMagnitude() const;
-    void Normalize();
+     Vec2f Normalize() const;
     [[nodiscard]] Vec2f GetNormalized() const;
     [[nodiscard]] float GetSqrMagnitude() const;
     [[nodiscard]] Vec2f Rotate(degree_t rotation) const;
     static float Dot(Vec2f a, Vec2f b);
     static Vec2f Lerp(Vec2f a, Vec2f b, float t);
     [[nodiscard]] sf::Vector2f toSf() const;
-
+    float Length() const { return std::sqrt(x * x + y * y); }
     Vec2f operator+(Vec2f v) const;
     Vec2f& operator+=(Vec2f v);
     Vec2f operator-(Vec2f v) const;
     Vec2f& operator-=(Vec2f v);
     Vec2f operator*(float f) const;
     Vec2f operator/(float f) const;
+  
 
     static constexpr Vec2f zero() { return Vec2f(); }
     static constexpr Vec2f one() { return Vec2f(1,1); }
@@ -41,7 +42,9 @@ struct Vec2f
     static constexpr Vec2f left() { return Vec2f(-1,0); }
     static constexpr Vec2f right() { return Vec2f(1,0); }
 };
-
+float CalculateDistance(Vec2f a, Vec2f b);
+Vec2f ComputeNormal(Vec2f center, Vec2f i);
+Vec2f ComputeTangent(Vec2f center, Vec2f i);
 Vec2f operator*(float f, Vec2f v);
 
 }

@@ -83,7 +83,7 @@ namespace game
                 for (PlayerNumber i = 0; i < maxPlayerNmb; i++)
                 {
                     auto physicsState = gameManager_.GetRollbackManager().GetValidatePhysicsState(i);
-                    const auto* statePtr = reinterpret_cast<const std::uint8_t*>(&physicsState);
+                    const unsigned char* statePtr = reinterpret_cast<const std::uint8_t*>(&physicsState);
                     for (size_t j = 0; j < sizeof(PhysicsState); j++)
                     {
                         validatePacket->physicsState[i * sizeof(PhysicsState) + j] = statePtr[j];
@@ -93,7 +93,7 @@ namespace game
                 const auto winner = gameManager_.CheckWinner();
                 if (winner != INVALID_PLAYER)
                 {
-                    core::LogDebug(fmt::format("Server declares P{} a winner", winner + 1));
+                    winner + 1;
                     auto winGamePacket = std::make_unique<WinGamePacket>();
                     winGamePacket->winner = winner;
                     SendReliablePacket(std::move(winGamePacket));

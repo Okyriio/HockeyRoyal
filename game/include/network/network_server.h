@@ -33,7 +33,7 @@ namespace game
 
         void Update(sf::Time dt) override;
 
-        void Destroy() override;
+        void Destroy();
 
         void SetTcpPort(unsigned short i);
 

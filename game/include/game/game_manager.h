@@ -8,7 +8,7 @@
 
 #include "game_globals.h"
 #include "rollback_manager.h"
-#include "star_background.h"
+
 #include "engine/entity.h"
 #include "graphics/graphics.h"
 #include "graphics/sprite.h"
@@ -28,9 +28,7 @@ namespace game
     public:
         GameManager();
         virtual ~GameManager() = default;
-        virtual void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, core::degree_t rotation);
-        virtual core::Entity SpawnBullet(PlayerNumber, core::Vec2f position, core::Vec2f velocity);
-        virtual void DestroyBullet(core::Entity entity);
+        virtual void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass);
         [[nodiscard]] core::Entity GetEntityFromPlayerNumber(PlayerNumber playerNumber) const;
         [[nodiscard]] Frame GetCurrentFrame() const { return currentFrame_; }
         [[nodiscard]] Frame GetLastValidateFrame() const { return rollbackManager_.GetLastValidateFrame(); }
@@ -45,6 +43,7 @@ namespace game
         static constexpr float PixelPerUnit = 100.0f;
         static constexpr float FixedPeriod = 0.02f; //50fps
         PlayerNumber CheckWinner() const;
+    
         virtual void WinGame(PlayerNumber winner);
     protected:
         core::EntityManager entityManager_;
@@ -73,8 +72,8 @@ namespace game
         [[nodiscard]] sf::Vector2u GetWindowSize() const { return windowSize_; }
         void Draw(sf::RenderTarget& target) override;
         void SetClientPlayer(PlayerNumber clientPlayer);
-        void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, core::degree_t rotation) override;
-        core::Entity SpawnBullet(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity) override;
+        void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass) override;
+      
         void FixedUpdate();
         void SetPlayerInput(PlayerNumber playerNumber, std::uint8_t playerInput, std::uint32_t inputFrame) override;
         void DrawImGui() override;
@@ -92,7 +91,6 @@ namespace game
         sf::View cameraView_;
         PlayerNumber clientPlayer_ = INVALID_PLAYER;
         core::SpriteManager spriteManager_;
-        StarBackground starBackground_;
         float fixedTimer_ = 0.0f;
         unsigned long long startingTime_ = 0;
         std::uint32_t state_ = 0;
