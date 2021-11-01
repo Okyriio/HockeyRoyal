@@ -42,7 +42,6 @@ namespace game
 		void ReceivePacket(sf::Packet& packet, PacketSource source);
 		sf::UdpSocket udpSocket_;
 		sf::TcpSocket tcpSocket_;
-
 		std::string serverAddress_ = "localhost";
 		unsigned short serverTcpPort_ = 12345;
 		unsigned short serverUdpPort_ = 0;

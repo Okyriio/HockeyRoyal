@@ -11,6 +11,7 @@ namespace game
     {
         JOIN = 0u,
         SPAWN_PLAYER,
+        SPAWN_BALL,
         INPUT,
         VALIDATE_STATE,
         START_GAME,
@@ -127,7 +128,7 @@ namespace game
         return packet >> spawnPlayerPacket.clientId >> spawnPlayerPacket.playerNumber >>
             spawnPlayerPacket.pos >> spawnPlayerPacket.angle;
     }
-
+    
     //
     const size_t maxInputNmb = 50;
     /**

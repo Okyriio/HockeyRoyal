@@ -29,6 +29,7 @@ namespace game
         GameManager();
         virtual ~GameManager() = default;
         virtual void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass);
+       /* core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);*/
         [[nodiscard]] core::Entity GetEntityFromPlayerNumber(PlayerNumber playerNumber) const;
         [[nodiscard]] Frame GetCurrentFrame() const { return currentFrame_; }
         [[nodiscard]] Frame GetLastValidateFrame() const { return rollbackManager_.GetLastValidateFrame(); }
@@ -73,7 +74,7 @@ namespace game
         void Draw(sf::RenderTarget& target) override;
         void SetClientPlayer(PlayerNumber clientPlayer);
         void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass) override;
-      
+       /* core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);*/
         void FixedUpdate();
         void SetPlayerInput(PlayerNumber playerNumber, std::uint8_t playerInput, std::uint32_t inputFrame) override;
         void DrawImGui() override;
@@ -96,7 +97,7 @@ namespace game
         std::uint32_t state_ = 0;
 
         sf::Texture shipTexture_;
-        sf::Texture bulletTexture_;
+        sf::Texture ballTexture_;
         sf::Font font_;
 
         sf::Text textRenderer_;

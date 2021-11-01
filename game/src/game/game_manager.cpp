@@ -16,7 +16,7 @@ namespace game
         playerEntityMap_.fill(core::EntityManager::INVALID_ENTITY);
     }
 
-    void GameManager::SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass)
+	void GameManager::SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass)
     {
         if (GetEntityFromPlayerNumber(playerNumber) != core::EntityManager::INVALID_ENTITY)
             return;
@@ -26,7 +26,7 @@ namespace game
 
         transformManager_.AddComponent(entity);
         transformManager_.SetPosition(entity, position);
-        rollbackManager_.SpawnPlayer(playerNumber, entity, position, radius,velocity, mass);
+        rollbackManager_.SpawnPlayer(playerNumber, entity, position,velocity, mass);
     }
 
     core::Entity GameManager::GetEntityFromPlayerNumber(PlayerNumber playerNumber) const
@@ -53,7 +53,16 @@ namespace game
     }
 
     
+    /*core::Entity GameManager::SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity)
+    {
+        const core::Entity entity = entityManager_.CreateEntity();
 
+        transformManager_.AddComponent(entity);
+        transformManager_.SetPosition(entity, position);
+        transformManager_.SetScale(entity, core::Vec2f::one() * 3);
+        rollbackManager_.SpawnBall(entity, position, velocity);
+        return entity;
+    }*/
    
     PlayerNumber GameManager::CheckWinner() const
     {
@@ -91,6 +100,11 @@ namespace game
         {
             core::LogError("Could not load player sprite");
         }
+    	
+      /*  if (!ballTexture_.loadFromFile("data/sprites/ball.png"))
+        {
+            core::LogError("Could not load player sprite");
+        }*/
         //load fonts
         if (!font_.loadFromFile("data/fonts/8-bit-hud.ttf"))
         {
@@ -150,13 +164,13 @@ namespace game
     void ClientGameManager::Draw(sf::RenderTarget& target)
     {
        
-        target.setView(cameraView_);
+        target.setView(originalView_);
 
        
         spriteManager_.Draw(target);
 
         // Draw texts on screen
-        target.setView(originalView_);
+        
         if (state_ & FINISHED)
         {
             if (winner_ == GetPlayerNumber())
@@ -216,9 +230,17 @@ namespace game
         }
         else
         {
-          
+            
+            const auto& playerManager = rollbackManager_.GetPlayerCharacterManager();
+            for (PlayerNumber playerNumber = 0; playerNumber < maxPlayerNmb; playerNumber++)
+            {
+                const auto playerEntity = GetEntityFromPlayerNumber(playerNumber);
+                if (playerEntity == core::EntityManager::INVALID_ENTITY)
+                {
+                    continue;
+                }
+            }
             textRenderer_.setFillColor(sf::Color::White);
-           
             textRenderer_.setPosition(10, 10);
             textRenderer_.setCharacterSize(20);
             target.draw(textRenderer_);
@@ -253,7 +275,18 @@ namespace game
 
     }
 
-   
+   /* core::Entity ClientGameManager::SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity)
+    {
+        const auto entity = GameManager::SpawnBall(playerNumber, position, velocity);
+
+        spriteManager_.AddComponent(entity);
+        spriteManager_.SetTexture(entity, ballTexture_);
+        spriteManager_.SetOrigin(entity, sf::Vector2f(ballTexture_.getSize()) / 2.0f);
+        auto sprite = spriteManager_.GetComponent(entity);
+        sprite.setColor(playerColors[playerNumber]);
+        spriteManager_.SetComponent(entity, sprite);
+        return entity;
+    }*/
 
 
     void ClientGameManager::FixedUpdate()

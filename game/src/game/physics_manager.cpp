@@ -4,18 +4,57 @@ namespace game
 {
 
     PhysicsManager::PhysicsManager(core::EntityManager& entityManager) :
-        bodyManager_(entityManager), boxManager_(entityManager), entityManager_(entityManager)
+        bodyManager_(entityManager), boxManager_(entityManager), entityManager_(entityManager), ballManager_(entityManager)
     {
 
     }
 
-	//Intersect
-    bool IntersectRigid(Body& c1, Body& c2)
+    void Box::UpdateVariable(double delta_time, int dx, int dy)
+    {
+	    core::Vec2f previous_center = position;
+	    position =
+		    0.5 * G * delta_time * delta_time + // 1/2*G*t^2
+		    velocity * delta_time // + v0*t
+		    + position; // + x0
+	    // delta x / delta t.
+	    velocity = (position - previous_center) * 1.0f / delta_time;
+	    position = position * printing_m_;
+	    CorrectPosition(dx, dy);
+	    CorrectVelocity(dx, dy);
+	    position = position * 1 / printing_m_;
+    }
+
+    void Box::CorrectVelocity(int dx, int dy)
+    {
+	    if (position.x <= 0 + radius)
+		    velocity.x = -BallBounciness * velocity.x;
+	    if (position.y <= 0 + radius)
+		    velocity.y = -BallBounciness * velocity.y;
+	    if (position.x >= (dx - radius))
+		    velocity.x = -BallBounciness * velocity.x;
+	    if (position.y >= (dy - radius))
+		    velocity.y = -BallBounciness * velocity.y;
+    }
+
+    void Box::CorrectPosition(int dx, int dy)
+    {
+	    core::Vec2f previous_center = position;
+	    if (position.x <= 0 + radius)
+		    position.x = radius;
+	    if (position.y <= 0 + radius)
+		    position.y = radius;
+	    if (position.x >= (dx - radius))
+		    position.x = dx - radius;
+	    if (position.y >= (dy - radius))
+		    position.y = dy - radius;
+    }
+
+    bool PhysicsManager::Intersect(const Body c1,const Body& c2)
     {
         return core::CalculateDistance(c1.position, c2.position) < (c1.radius / 100 + c2.radius / 100);
     }
 
-    core::Vec2f IntersectPoint(const Rigidbody& m1, const Rigidbody& m2)
+    core::Vec2f IntersectPoint(const Body& m1, const Body& m2)
     {
 
         double ratio = (m1.radius / 100) / ((m1.radius / 100) + (m2.radius / 100));
@@ -23,14 +62,16 @@ namespace game
 
     }
 
-    core::Vec2f RelocateCenter(const  Rigidbody& rb1, const core::Vec2f& I) {
+  
+
+    core::Vec2f RelocateCenter(const Body& rb1, const core::Vec2f& I) {
 
         //Put the center far enough from the other circles
         double ratio = (rb1.radius / 100) / CalculateDistance(rb1.position, I);
         return (rb1.position - I) * ratio + I;
 
     }
-    void ResolveIntersect(Rigidbody& rb1, Rigidbody& rb2) {
+    void PhysicsManager::ResolveIntersect(Body& rb1, Body& rb2) {
 
         //Calculates tangeants and normals
         float v1n = ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).x * rb1.velocity.x +
@@ -43,36 +84,52 @@ namespace game
             ComputeTangent(rb2.position, IntersectPoint(rb1, rb2)).y * rb2.velocity.y;
         //Calculates new velocity and directions after collisions
         rb1.velocity.x = ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).x * v2n + ComputeTangent(
-            rb1.position, IntersectPoint(rb1, rb2)).x * v1t * -rb1.R;
+            rb1.position, IntersectPoint(rb1, rb2)).x * v1t * -rb1.BallBounciness;
         rb1.velocity.y = ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).y * v2n + ComputeTangent(
-            rb1.position, IntersectPoint(rb1, rb2)).y * v1t * -rb1.R;
+            rb1.position, IntersectPoint(rb1, rb2)).y * v1t * -rb1.BallBounciness;
         rb2.velocity.x = ComputeNormal(rb2.position, IntersectPoint(rb1, rb2)).x * v1n + ComputeTangent(
-            rb2.position, IntersectPoint(rb1, rb2)).x * v2t * -rb2.R;
+            rb2.position, IntersectPoint(rb1, rb2)).x * v2t * -rb2.BallBounciness;
         rb2.velocity.y = ComputeNormal(rb2.position, IntersectPoint(rb1, rb2)).y * v1n + ComputeTangent(
-            rb2.position, IntersectPoint(rb1, rb2)).y * v2t * -rb2.R;
+            rb2.position, IntersectPoint(rb1, rb2)).y * v2t * -rb2.BallBounciness;
 
         rb1.position = RelocateCenter(rb1, IntersectPoint(rb1, rb2));
         rb2.position = RelocateCenter(rb2, IntersectPoint(rb1, rb2));
-        rb1.velocity = rb1.velocity * -rb1.R;
-        rb2.velocity = rb2.velocity * -rb2.R;
+        rb1.velocity = rb1.velocity * -rb1.BallBounciness;
+        rb2.velocity = rb2.velocity * -rb2.BallBounciness;
     }
     core::Vec2f Body::GetPositionAtTime(float delta_time) const
     {
         return position + velocity * delta_time;
     	
     }
+	
 
     void PhysicsManager::FixedUpdate(sf::Time dt)
     {
-        UpdateDrawData(dt.asSeconds());
+        
         for (core::Entity entity = 0; entity < entityManager_.GetEntitiesSize(); entity++)
         {
             if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(core::ComponentType::BODY2D)))
                 continue;
             auto body = bodyManager_.GetComponent(entity);
             body.position += body.velocity * dt.asSeconds();
-           
             bodyManager_.SetComponent(entity, body);
+            /*Ball ball = ballManager_.GetComponent(2);
+            ball.position += body.velocity * dt.asSeconds();
+            ballManager_.SetComponent(entity, ball);*/
+            auto body1 = bodyManager_.GetComponent(0);
+            auto body2 = bodyManager_.GetComponent(1);
+
+
+
+            if (Intersect(body1, body2))//Resolve intersections between two pads
+            {
+                //core::LogWarning(fmt::format("Contact!"));
+                ResolveIntersect(body1, body2);
+                bodyManager_.SetComponent(0, body1);
+                bodyManager_.SetComponent(1, body2);
+            }
+          
         }
         for (core::Entity entity = 0; entity < entityManager_.GetEntitiesSize(); entity++)
         {
@@ -82,24 +139,33 @@ namespace game
             for (core::Entity otherEntity = entity; otherEntity < entityManager_.GetEntitiesSize(); otherEntity++)
             {
                 if (entity == otherEntity)
+                {
                     continue;
-                    if (!entityManager_.HasComponent(otherEntity, static_cast<core::EntityMask>(core::ComponentType::BODY2D) | static_cast<core::EntityMask>(core::ComponentType::BOX_COLLIDER2D))) {
-                        
-                        continue;
-                    }
+                }
+                   
+                if (!entityManager_.HasComponent(otherEntity, static_cast<core::EntityMask>(core::ComponentType::BODY2D) | static_cast<core::EntityMask>(core::ComponentType::BOX_COLLIDER2D))) {
 
+                    continue;
+                }
+            	
+               
                 const Body& body1 = bodyManager_.GetComponent(entity);
                 const Box& box1 = boxManager_.GetComponent(entity);
 
                 const Body& body2 = bodyManager_.GetComponent(otherEntity);
                 const Box& box2 = boxManager_.GetComponent(otherEntity);
 
-				 
+
 
             }
-        
+
         }
+  
+        
     }
+
+
+   
 
     void PhysicsManager::SetBody(core::Entity entity, const Body& body)
     {
@@ -130,7 +196,20 @@ namespace game
     {
         return boxManager_.GetComponent(entity);
     }
+    void PhysicsManager::AddCircle(core::Entity entity)
+    {
+        ballManager_.AddComponent(entity);
+    }
 
+    void PhysicsManager::SetCircle(core::Entity entity, const Ball& ball)
+    {
+        ballManager_.SetComponent(entity, ball);
+    }
+
+    const Ball& PhysicsManager::GetCircle(core::Entity entity) const
+    {
+        return  ballManager_.GetComponent(entity);
+    }
     void PhysicsManager::RegisterTriggerListener(OnTriggerInterface& collisionInterface)
     {
        

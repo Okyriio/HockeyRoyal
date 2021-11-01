@@ -59,7 +59,7 @@ namespace game
                 playerCharacter.input = playerInput;
                 currentPlayerManager_.SetComponent(playerEntity, playerCharacter);
             }
-            //Simulate one frame of the game
+            //ResolveCollisions one frame of the game
            
             currentPlayerManager_.FixedUpdate(sf::seconds(GameManager::FixedPeriod));
             currentPhysicsManager_.FixedUpdate(sf::seconds(GameManager::FixedPeriod));
@@ -76,6 +76,7 @@ namespace game
            
         }
     }
+   
     void RollbackManager::SetPlayerInput(PlayerNumber playerNumber, PlayerInput playerInput, std::uint32_t inputFrame)
     {
         //Should only be called on the server
@@ -210,13 +211,16 @@ namespace game
         return state;
     }
 
-    void RollbackManager::SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position, float radius, core::Vec2f velocity, float mass)
+    void RollbackManager::SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position, core::Vec2f velocity, float mass)
     {
         Body playerBody;
         playerBody.position = position;
        
         Box playerBox;
-        playerBox.extends = core::Vec2f::one() * 0.5f;
+       
+        playerBox.mass = 30.0f;
+       
+        playerBox.velocity = { 0.0f,0.0f };
 
         PlayerCharacter playerCharacter;
         playerCharacter.playerNumber = playerNumber;
@@ -241,15 +245,29 @@ namespace game
         currentTransformManager_.SetPosition(entity, position);
        
     }
+ /*   void RollbackManager::SpawnBall(core::Entity entity, core::Vec2f position, core::Vec2f velocity)
+    {
 
+        Ball ballBody;
+        ballBody.position = position;
+        ballBody.velocity = velocity;
+
+
+        currentPhysicsManager_.AddBody(entity);
+        currentPhysicsManager_.SetBody(entity, ballBody);
+        currentPhysicsManager_.AddCircle(entity);
+        currentPhysicsManager_.SetCircle(entity, ballBody);
+
+        currentTransformManager_.AddComponent(entity);
+        currentTransformManager_.SetPosition(entity, position);
+        currentTransformManager_.SetScale(entity, core::Vec2f::one() * 0.6f);
+        currentTransformManager_.SetRotation(entity, core::degree_t(0.0f));
+    }*/
     PlayerInput RollbackManager::GetInputAtFrame(PlayerNumber playerNumber, Frame frame)
     {
         assert(currentFrame_ - frame < inputs_[playerNumber].size() &&
             "Trying to get input too far in the past");
         return inputs_[playerNumber][currentFrame_ - frame];
     }
-
-   
-
    
 }

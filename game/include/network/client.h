@@ -10,7 +10,7 @@ namespace game
     public:
         Client() : gameManager_(*this)
         {
-
+            
         }
         virtual ~Client() = default;
         virtual void SetWindowSize(sf::Vector2u windowSize)
@@ -19,8 +19,8 @@ namespace game
         }
         virtual void ReceivePacket(const Packet* packet);
     protected:
-
-        ClientGameManager gameManager_;
+        
+        ClientGameManager gameManager_; 
         ClientId clientId_ = 0;
     };
 }

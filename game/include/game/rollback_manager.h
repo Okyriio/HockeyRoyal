@@ -25,7 +25,7 @@ class GameManager;
     public:
         explicit RollbackManager(GameManager& gameManager, core::EntityManager& entityManager);
         /**
-         * \brief Simulate all players with new inputs, method call only by the clients
+         * \brief ResolveCollisions all players with new inputs, method call only by the clients
          */
         void SimulateToCurrentFrame();
         void SetPlayerInput(PlayerNumber playerNumber, PlayerInput playerInput, Frame inputFrame);
@@ -44,8 +44,8 @@ class GameManager;
         [[nodiscard]] Frame GetCurrentFrame() const { return currentFrame_; }
         [[nodiscard]] const core::TransformManager& GetTransformManager() const { return currentTransformManager_; }
         [[nodiscard]] const PlayerCharacterManager& GetPlayerCharacterManager() const { return currentPlayerManager_; }
-        void SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position, float radius, core::Vec2f velocity, float mass);
-       
+        void SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position, core::Vec2f velocity, float mass);
+      /*  void SpawnBall(core::Entity entity, core::Vec2f position, core::Vec2f velocity);*/
         /**
          * \brief This function does not destroy the entity definitely, but puts the DESTROY flag
          */

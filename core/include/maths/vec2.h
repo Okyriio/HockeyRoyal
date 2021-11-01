@@ -33,6 +33,7 @@ struct Vec2f
     Vec2f& operator-=(Vec2f v);
     Vec2f operator*(float f) const;
     Vec2f operator/(float f) const;
+    bool operator==(const Vec2f& pos) const = default;
   
 
     static constexpr Vec2f zero() { return Vec2f(); }

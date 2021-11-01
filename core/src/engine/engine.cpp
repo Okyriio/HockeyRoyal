@@ -8,6 +8,8 @@
 #include <imgui.h>
 #include <imgui-SFML.h>
 
+
+#include "../../../game/include/game/physics_manager.h"
 #include "engine/globals.h"
 
 namespace core
@@ -59,6 +61,7 @@ void Engine::Update(sf::Time dt)
     sf::Event e{};
     while (window_->pollEvent(e))
     {
+	    
         ImGui::SFML::ProcessEvent(e);
         switch (e.type)
         {

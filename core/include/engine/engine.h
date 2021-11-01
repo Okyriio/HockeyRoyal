@@ -4,6 +4,8 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
+
+
 namespace core
 {
 class OnEventInterface;
@@ -24,12 +26,12 @@ protected:
     void Init();
     void Update(sf::Time dt);
     void Destroy();
-
     std::vector<SystemInterface*> systems_;
     std::vector<OnEventInterface*> eventInterfaces_;
     std::vector<DrawInterface*> drawInterfaces_;
     std::vector<DrawImGuiInterface*> drawImGuiInterfaces_;
     std::unique_ptr<sf::RenderWindow> window_;
+    
 };
 
 } // namespace core

@@ -15,6 +15,7 @@ namespace game
             windowSize_ = core::windowSize;
             client_.SetWindowSize(windowSize_);
             client_.Init();
+			
         }
 
         void Update(sf::Time dt) override
@@ -41,6 +42,7 @@ namespace game
 
         void OnEvent(const sf::Event& event) override
         {
+           
             switch (event.type)
             {
             case sf::Event::Resized:

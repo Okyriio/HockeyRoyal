@@ -44,6 +44,7 @@ namespace core
         void SetComponent(Entity entity, const T& value);
 
         [[nodiscard]] const std::vector<T>& GetAllComponents() const;
+        [[nodiscard]] std::vector<T>& GetAllComponents();
         void CopyAllComponents(const std::vector<T>& components);
     protected:
         EntityManager& entityManager_;
@@ -91,6 +92,12 @@ namespace core
 
     template <typename T, Component C>
     const std::vector<T>& ComponentManager<T, C>::GetAllComponents() const
+    {
+        return components_;
+    }
+
+    template <typename T, Component C>
+    std::vector<T>& ComponentManager<T, C>::GetAllComponents()
     {
         return components_;
     }

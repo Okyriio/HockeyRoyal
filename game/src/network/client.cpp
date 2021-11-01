@@ -33,6 +33,7 @@ namespace game
             const auto* startGamePacket = static_cast<const StartGamePacket*>(packet);
             const auto startingTime = core::ConvertFromBinary<unsigned long long>(startGamePacket->startTime);
             gameManager_.StartGame(startingTime);
+            /*gameManager_.SpawnBall(2, {50,50}, {0,0});*/
             break;
         }
         case PacketType::INPUT:
