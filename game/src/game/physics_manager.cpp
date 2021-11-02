@@ -112,19 +112,46 @@ namespace game
             if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(core::ComponentType::BODY2D)))
                 continue;
             auto body = bodyManager_.GetComponent(entity);
+            core::Vec2f max_pos = { (core::windowSize.y / core::pixelPerMeter / 2),
+            	(core::windowSize.x / core::pixelPerMeter / 2) };
+            core::Vec2f min_pos = { -(core::windowSize.y / core::pixelPerMeter / 2),
+            	-(core::windowSize.x / core::pixelPerMeter / 2) };
             body.position += body.velocity * dt.asSeconds();
-            bodyManager_.SetComponent(entity, body);
+
+            
             /*Ball ball = ballManager_.GetComponent(2);
             ball.position += body.velocity * dt.asSeconds();
             ballManager_.SetComponent(entity, ball);*/
+           
+
+           
+
+            if (body.position.x <= min_pos.x + Body::radius/core::pixelPerMeter)
+            {
+                body.position.x = min_pos.x + Body::radius / core::pixelPerMeter;
+                body.velocity.x = 15;
+            }
+            if (body.position.y <= min_pos.y + Body::radius / core::pixelPerMeter)            //correct position and velocity
+            {
+                body.position.y = min_pos.y + Body::radius / core::pixelPerMeter;
+                body.velocity.y = -body.velocity.y/2;
+            }
+            if (body.position.x >= max_pos.x - Body::radius / core::pixelPerMeter)
+            {
+                body.position.x = max_pos.x - Body::radius / core::pixelPerMeter;
+                body.velocity.x = -15;
+            }
+            if (body.position.y >= max_pos.y - Body::radius / core::pixelPerMeter)
+            {
+                body.position.y = max_pos.y - Body::radius / core::pixelPerMeter;
+                body.velocity.y = -10;
+            }
+            bodyManager_.SetComponent(entity, body);
             auto body1 = bodyManager_.GetComponent(0);
             auto body2 = bodyManager_.GetComponent(1);
-
-
-
+        	
             if (Intersect(body1, body2))//Resolve intersections between two pads
             {
-                //core::LogWarning(fmt::format("Contact!"));
                 ResolveIntersect(body1, body2);
                 bodyManager_.SetComponent(0, body1);
                 bodyManager_.SetComponent(1, body2);

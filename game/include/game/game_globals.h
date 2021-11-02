@@ -18,7 +18,7 @@ namespace game
 
     const std::uint32_t maxPlayerNmb = 2;
    
-    const float playerSpeed = 20.0f;
+    const float playerSpeed = 33.0f;
    
 
     const std::array<sf::Color, std::max(maxPlayerNmb, 4u)> playerColors =
