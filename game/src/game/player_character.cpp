@@ -19,7 +19,7 @@ namespace game
             if (!entityManager_.HasComponent(playerEntity,
                                                    static_cast<core::EntityMask>(ComponentType::PLAYER_CHARACTER)))
                 continue;
-            auto playerBody = physicsManager_.GetBody(playerEntity);
+            auto playerBody = physicsManager_.GetCircle(playerEntity);
             auto playerCharacter = GetComponent(playerEntity);
             const auto input = playerCharacter.input;
 
@@ -37,7 +37,7 @@ namespace game
             playerBody.velocity = (accelerationH + accelerationV) * dt.asSeconds();
           
 
-            physicsManager_.SetBody(playerEntity, playerBody);
+            physicsManager_.SetCircle(playerEntity, playerBody);
     
         }
     }

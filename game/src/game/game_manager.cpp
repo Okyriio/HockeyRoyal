@@ -1,3 +1,5 @@
+#include <array>
+#include <array>
 #include <game/game_manager.h>
 
 #include "utils/log.h"
@@ -16,7 +18,7 @@ namespace game
         playerEntityMap_.fill(core::EntityManager::INVALID_ENTITY);
     }
 
-	void GameManager::SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass)
+    void GameManager::SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position)
     {
         if (GetEntityFromPlayerNumber(playerNumber) != core::EntityManager::INVALID_ENTITY)
             return;
@@ -26,7 +28,8 @@ namespace game
 
         transformManager_.AddComponent(entity);
         transformManager_.SetPosition(entity, position);
-        rollbackManager_.SpawnPlayer(playerNumber, entity, position,velocity, mass);
+
+        rollbackManager_.SpawnPlayer(playerNumber, entity, position);
     }
 
     core::Entity GameManager::GetEntityFromPlayerNumber(PlayerNumber playerNumber) const
@@ -52,18 +55,17 @@ namespace game
         rollbackManager_.ValidateFrame(newValidateFrame);
     }
 
-    
-    /*core::Entity GameManager::SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity)
+    core::Entity GameManager::SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity)
     {
         const core::Entity entity = entityManager_.CreateEntity();
 
         transformManager_.AddComponent(entity);
         transformManager_.SetPosition(entity, position);
-        transformManager_.SetScale(entity, core::Vec2f::one() * 3);
-        rollbackManager_.SpawnBall(entity, position, velocity);
+        transformManager_.SetScale(entity, core::Vec2f::one() * ballScale);
+        rollbackManager_.SpawnBall(playerNumber, entity, position, velocity);
         return entity;
-    }*/
-   
+    }
+
     PlayerNumber GameManager::CheckWinner() const
     {
         int alivePlayer = 0;
@@ -74,7 +76,6 @@ namespace game
             if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(ComponentType::PLAYER_CHARACTER)))
                 continue;
             const auto& player = playerManager.GetComponent(entity);
-          
         }
 
         return alivePlayer == 1 ? winner : INVALID_PLAYER;
@@ -95,23 +96,20 @@ namespace game
     void ClientGameManager::Init()
     {
         //load textures
-      
         if (!shipTexture_.loadFromFile("data/sprites/pad.png"))
         {
-            core::LogError("Could not load player sprite");
+            core::LogError("Could not load ship sprite");
         }
-    	
-      /*  if (!ballTexture_.loadFromFile("data/sprites/ball.png"))
+        if (!ballTexture_.loadFromFile("data/sprites/ball.png"))
         {
-            core::LogError("Could not load player sprite");
-        }*/
+            core::LogError("Could not load ball sprite");
+        }
         //load fonts
         if (!font_.loadFromFile("data/fonts/8-bit-hud.ttf"))
         {
             core::LogError("Could not load font");
         }
         textRenderer_.setFont(font_);
-       
     }
 
     void ClientGameManager::Update(sf::Time dt)
@@ -127,15 +125,12 @@ namespace game
                     static_cast<core::EntityMask>(core::ComponentType::SPRITE)))
                 {
                     const auto& player = rollbackManager_.GetPlayerCharacterManager().GetComponent(entity);
-
-                  
                 }
 
                 if (entityManager_.HasComponent(entity, static_cast<core::EntityMask>(core::ComponentType::TRANSFORM)))
                 {
                     transformManager_.SetPosition(entity, rollbackManager_.GetTransformManager().GetPosition(entity));
                     transformManager_.SetScale(entity, rollbackManager_.GetTransformManager().GetScale(entity));
-                    transformManager_.SetRotation(entity, rollbackManager_.GetTransformManager().GetRotation(entity));
                 }
             }
         }
@@ -151,7 +146,10 @@ namespace game
 
     }
 
-  
+    void ClientGameManager::Destroy()
+    {
+    }
+
     void ClientGameManager::SetWindowSize(sf::Vector2u windowsSize)
     {
         windowSize_ = windowsSize;
@@ -163,14 +161,13 @@ namespace game
 
     void ClientGameManager::Draw(sf::RenderTarget& target)
     {
-       
-        target.setView(originalView_);
+        UpdateCameraView();
+        target.setView(cameraView_);
 
-       
         spriteManager_.Draw(target);
 
         // Draw texts on screen
-        
+        target.setView(originalView_);
         if (state_ & FINISHED)
         {
             if (winner_ == GetPlayerNumber())
@@ -178,9 +175,9 @@ namespace game
                 const std::string winnerText = fmt::format("You won!");
                 textRenderer_.setFillColor(sf::Color::White);
                 textRenderer_.setString(winnerText);
-                textRenderer_.setCharacterSize(32);
+                textRenderer_.setCharacterSize(50);
                 const auto textBounds = textRenderer_.getLocalBounds();
-                textRenderer_.setPosition(windowSize_.x / 2.0f - textBounds.width/2.0f, 
+                textRenderer_.setPosition(windowSize_.x / 2.0f - textBounds.width / 2.0f,
                     windowSize_.y / 2.0f - textBounds.height / 2.0f);
                 target.draw(textRenderer_);
             }
@@ -189,7 +186,7 @@ namespace game
                 const std::string winnerText = fmt::format("P{} won!", winner_ + 1);
                 textRenderer_.setFillColor(sf::Color::White);
                 textRenderer_.setString(winnerText);
-                textRenderer_.setCharacterSize(32);
+                textRenderer_.setCharacterSize(50);
                 const auto textBounds = textRenderer_.getLocalBounds();
                 textRenderer_.setPosition(windowSize_.x / 2.0f - textBounds.width / 2.0f,
                     windowSize_.y / 2.0f - textBounds.height / 2.0f);
@@ -200,7 +197,7 @@ namespace game
                 const std::string errorMessage = fmt::format("Error with other players");
                 textRenderer_.setFillColor(sf::Color::Red);
                 textRenderer_.setString(errorMessage);
-                textRenderer_.setCharacterSize(32);
+                textRenderer_.setCharacterSize(50);
                 const auto textBounds = textRenderer_.getLocalBounds();
                 textRenderer_.setPosition(windowSize_.x / 2.0f - textBounds.width / 2.0f,
                     windowSize_.y / 2.0f - textBounds.height / 2.0f);
@@ -220,7 +217,7 @@ namespace game
                     const std::string countDownText = fmt::format("Starts in {}", ((startingTime_ - ms) / 1000 + 1));
                     textRenderer_.setFillColor(sf::Color::White);
                     textRenderer_.setString(countDownText);
-                    textRenderer_.setCharacterSize(32);
+                    textRenderer_.setCharacterSize(50);
                     const auto textBounds = textRenderer_.getLocalBounds();
                     textRenderer_.setPosition(windowSize_.x / 2.0f - textBounds.width / 2.0f,
                         windowSize_.y / 2.0f - textBounds.height / 2.0f);
@@ -230,7 +227,7 @@ namespace game
         }
         else
         {
-            
+            std::string health;
             const auto& playerManager = rollbackManager_.GetPlayerCharacterManager();
             for (PlayerNumber playerNumber = 0; playerNumber < maxPlayerNmb; playerNumber++)
             {
@@ -241,41 +238,35 @@ namespace game
                 }
             }
             textRenderer_.setFillColor(sf::Color::White);
+            textRenderer_.setString(health);
             textRenderer_.setPosition(10, 10);
             textRenderer_.setCharacterSize(20);
             target.draw(textRenderer_);
         }
-        
+
     }
 
-    void ClientGameManager::Destroy()
-    {
-	    
-    }
-
-
-	
     void ClientGameManager::SetClientPlayer(PlayerNumber clientPlayer)
     {
         clientPlayer_ = clientPlayer;
     }
 
-    void ClientGameManager::SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass)
+    void ClientGameManager::SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position)
     {
         core::LogDebug(fmt::format("Spawn player: {}", playerNumber));
 
-        GameManager::SpawnPlayer(playerNumber, position, radius, velocity, mass);
+        GameManager::SpawnPlayer(playerNumber, position);
         const auto entity = GetEntityFromPlayerNumber(playerNumber);
+
         spriteManager_.AddComponent(entity);
         spriteManager_.SetTexture(entity, shipTexture_);
-        spriteManager_.SetOrigin(entity, sf::Vector2f(shipTexture_.getSize())/2.0f);
+        spriteManager_.SetOrigin(entity, sf::Vector2f(shipTexture_.getSize()) / 2.0f);
         auto sprite = spriteManager_.GetComponent(entity);
         sprite.setColor(playerColors[playerNumber]);
         spriteManager_.SetComponent(entity, sprite);
-
     }
 
-   /* core::Entity ClientGameManager::SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity)
+    core::Entity ClientGameManager::SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity)
     {
         const auto entity = GameManager::SpawnBall(playerNumber, position, velocity);
 
@@ -286,7 +277,8 @@ namespace game
         sprite.setColor(playerColors[playerNumber]);
         spriteManager_.SetComponent(entity, sprite);
         return entity;
-    }*/
+    }
+
 
 
     void ClientGameManager::FixedUpdate()
@@ -376,28 +368,28 @@ namespace game
     }
 
     void ClientGameManager::ConfirmValidateFrame(Frame newValidateFrame,
-        const std::array<PhysicsState, maxPlayerNmb>& physicsStates)
+        const std::array<PhysicsState, maxPlayerNmb>& physicsStates, PhysicsState physicsBallState)
     {
         if (newValidateFrame < rollbackManager_.GetLastValidateFrame())
         {
-            //core::LogDebug(fmt::format("[Warning] New validate frame is too old"));
+            core::LogDebug(fmt::format("[Warning] New validate frame is too old"));
             return;
         }
         for (PlayerNumber playerNumber = 0; playerNumber < maxPlayerNmb; playerNumber++)
         {
             if (rollbackManager_.GetLastReceivedFrame(playerNumber) < newValidateFrame)
             {
-                
+
                 core::LogDebug(fmt::format("[Warning] Trying to validate frame {} while playerNumber {} is at input frame {}, client player {}",
                     newValidateFrame,
                     playerNumber + 1,
                     rollbackManager_.GetLastReceivedFrame(playerNumber),
-                    GetPlayerNumber()+1));
-                
+                    GetPlayerNumber() + 1));
+
                 return;
             }
         }
-        rollbackManager_.ConfirmFrame(newValidateFrame, physicsStates);
+        rollbackManager_.ConfirmFrame(newValidateFrame, physicsStates, physicsBallState);
     }
 
     void ClientGameManager::WinGame(PlayerNumber winner)
@@ -406,7 +398,14 @@ namespace game
         state_ = state_ | FINISHED;
     }
 
-   
+    void ClientGameManager::UpdateCameraView()
+    {
+        if (!(state_ | STARTED))
+        {
+            cameraView_ = originalView_;
+            return;
+        }
 
- }
-
+        cameraView_ = originalView_;
+    }
+}

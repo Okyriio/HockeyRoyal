@@ -4,239 +4,144 @@ namespace game
 {
 
     PhysicsManager::PhysicsManager(core::EntityManager& entityManager) :
-        bodyManager_(entityManager), boxManager_(entityManager), entityManager_(entityManager), ballManager_(entityManager)
+        entityManager_(entityManager),
+        circleManager_(entityManager)
     {
 
     }
 
-    void Box::UpdateVariable(double delta_time, int dx, int dy)
+    
+	
+    void PhysicsManager::ResolveBodyIntersect(CircleBody& body1, CircleBody& body2)
     {
-	    core::Vec2f previous_center = position;
-	    position =
-		    0.5 * G * delta_time * delta_time + // 1/2*G*t^2
-		    velocity * delta_time // + v0*t
-		    + position; // + x0
-	    // delta x / delta t.
-	    velocity = (position - previous_center) * 1.0f / delta_time;
-	    position = position * printing_m_;
-	    CorrectPosition(dx, dy);
-	    CorrectVelocity(dx, dy);
-	    position = position * 1 / printing_m_;
+	    const float v1n = ComputeNormal(body1.position, ContactPoint(body1, body2)).x * body1.velocity.x +
+	        ComputeNormal(body1.position, ContactPoint(body1, body2)).y * body1.velocity.y;
+	    const float v1t = ComputeTangent(body1.position, ContactPoint(body1, body2)).x * body1.velocity.x +
+            ComputeTangent(body1.position, ContactPoint(body1, body2)).y * body1.velocity.y;
+	    const float v2n = ComputeNormal(body2.position, ContactPoint(body1, body2)).x * body2.velocity.x +
+            ComputeNormal(body2.position, ContactPoint(body1, body2)).y * body2.velocity.y;
+	    const float v2t = ComputeTangent(body2.position, ContactPoint(body1, body2)).x * body2.velocity.x +
+            ComputeTangent(body2.position, ContactPoint(body1, body2)).y * body2.velocity.y;
+
+        body1.velocity.x = ComputeNormal(body1.position, ContactPoint(body1, body2)).x * v2n + ComputeTangent(
+            body1.position, ContactPoint(body1, body2)).x * v1t * -body1.bounciness;
+        body1.velocity.y = ComputeNormal(body1.position, ContactPoint(body1, body2)).y * v2n + ComputeTangent(
+            body1.position, ContactPoint(body1, body2)).y * v1t * -body1.bounciness;
+        body2.velocity.x = ComputeNormal(body2.position, ContactPoint(body1, body2)).x * v1n + ComputeTangent(
+            body2.position, ContactPoint(body1, body2)).x * v2t * -body2.bounciness;
+        body2.velocity.y = ComputeNormal(body2.position, ContactPoint(body1, body2)).y * v1n + ComputeTangent(
+            body2.position, ContactPoint(body1, body2)).y * v2t * -body2.bounciness;
+
+        body1.position = RelocateCenter(body1, ContactPoint(body1, body2));
+        body2.position = RelocateCenter(body2, ContactPoint(body1, body2));
+        body1.velocity = body1.velocity * -body1.bounciness;
+        body2.velocity = body2.velocity * -body2.bounciness;
     }
 
-    void Box::CorrectVelocity(int dx, int dy)
+    core::Vec2f PhysicsManager::ContactPoint(const CircleBody& body1, const CircleBody& body2) const
     {
-	    if (position.x <= 0 + radius)
-		    velocity.x = -BallBounciness * velocity.x;
-	    if (position.y <= 0 + radius)
-		    velocity.y = -BallBounciness * velocity.y;
-	    if (position.x >= (dx - radius))
-		    velocity.x = -BallBounciness * velocity.x;
-	    if (position.y >= (dy - radius))
-		    velocity.y = -BallBounciness * velocity.y;
+        double ratio = (body1.radius) / ((body1.radius)+(body2.radius));
+        return (body2.position - body1.position) * ratio + body1.position;
     }
 
-    void Box::CorrectPosition(int dx, int dy)
+    core::Vec2f PhysicsManager::RelocateCenter(const CircleBody& body, const core::Vec2f& v)
     {
-	    core::Vec2f previous_center = position;
-	    if (position.x <= 0 + radius)
-		    position.x = radius;
-	    if (position.y <= 0 + radius)
-		    position.y = radius;
-	    if (position.x >= (dx - radius))
-		    position.x = dx - radius;
-	    if (position.y >= (dy - radius))
-		    position.y = dy - radius;
+        double ratio = (body.radius) / (body.position - v).Length();
+        return (body.position - v) * ratio + v;
     }
 
-    bool PhysicsManager::Intersect(const Body c1,const Body& c2)
+    float PhysicsManager::CalculateDistance(CircleBody body1, CircleBody body2)
     {
-        return core::CalculateDistance(c1.position, c2.position) < (c1.radius / 100 + c2.radius / 100);
+        const float dx = body2.position.x - body1.position.x;
+        const float dy = body2.position.y - body1.position.y;
+        return std::sqrt(dx * dx + dy * dy);
     }
 
-    core::Vec2f IntersectPoint(const Body& m1, const Body& m2)
+    bool PhysicsManager::BodyIntersect(CircleBody body1, CircleBody body2)
     {
-
-        double ratio = (m1.radius / 100) / ((m1.radius / 100) + (m2.radius / 100));
-        return (m2.position - m1.position) * ratio + m1.position;
-
-    }
-
-  
-
-    core::Vec2f RelocateCenter(const Body& rb1, const core::Vec2f& I) {
-
-        //Put the center far enough from the other circles
-        double ratio = (rb1.radius / 100) / CalculateDistance(rb1.position, I);
-        return (rb1.position - I) * ratio + I;
-
-    }
-    void PhysicsManager::ResolveIntersect(Body& rb1, Body& rb2) {
-
-        //Calculates tangeants and normals
-        float v1n = ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).x * rb1.velocity.x +
-            ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).y * rb1.velocity.y;
-        float v1t = ComputeTangent(rb1.position, IntersectPoint(rb1, rb2)).x * rb1.velocity.x +
-            ComputeTangent(rb1.position, IntersectPoint(rb1, rb2)).y * rb1.velocity.y;
-        float v2n = ComputeNormal(rb2.position, IntersectPoint(rb1, rb2)).x * rb2.velocity.x +
-            ComputeNormal(rb2.position, IntersectPoint(rb1, rb2)).y * rb2.velocity.y;
-        float v2t = ComputeTangent(rb2.position, IntersectPoint(rb1, rb2)).x * rb2.velocity.x +
-            ComputeTangent(rb2.position, IntersectPoint(rb1, rb2)).y * rb2.velocity.y;
-        //Calculates new velocity and directions after collisions
-        rb1.velocity.x = ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).x * v2n + ComputeTangent(
-            rb1.position, IntersectPoint(rb1, rb2)).x * v1t * -rb1.BallBounciness;
-        rb1.velocity.y = ComputeNormal(rb1.position, IntersectPoint(rb1, rb2)).y * v2n + ComputeTangent(
-            rb1.position, IntersectPoint(rb1, rb2)).y * v1t * -rb1.BallBounciness;
-        rb2.velocity.x = ComputeNormal(rb2.position, IntersectPoint(rb1, rb2)).x * v1n + ComputeTangent(
-            rb2.position, IntersectPoint(rb1, rb2)).x * v2t * -rb2.BallBounciness;
-        rb2.velocity.y = ComputeNormal(rb2.position, IntersectPoint(rb1, rb2)).y * v1n + ComputeTangent(
-            rb2.position, IntersectPoint(rb1, rb2)).y * v2t * -rb2.BallBounciness;
-
-        rb1.position = RelocateCenter(rb1, IntersectPoint(rb1, rb2));
-        rb2.position = RelocateCenter(rb2, IntersectPoint(rb1, rb2));
-        rb1.velocity = rb1.velocity * -rb1.BallBounciness;
-        rb2.velocity = rb2.velocity * -rb2.BallBounciness;
-    }
-    core::Vec2f Body::GetPositionAtTime(float delta_time) const
-    {
-        return position + velocity * delta_time;
-    	
+        return CalculateDistance(body1, body2) < (body1.radius + body2.radius);
     }
 	
-
     void PhysicsManager::FixedUpdate(sf::Time dt)
     {
-        
         for (core::Entity entity = 0; entity < entityManager_.GetEntitiesSize(); entity++)
         {
-            if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(core::ComponentType::BODY2D)))
+            if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(core::ComponentType::CIRCLE_BODY2D)))
                 continue;
-            auto body = bodyManager_.GetComponent(entity);
-            core::Vec2f max_pos = { (core::windowSize.y / core::pixelPerMeter / 2),
-            	(core::windowSize.x / core::pixelPerMeter / 2) };
-            core::Vec2f min_pos = { -(core::windowSize.y / core::pixelPerMeter / 2),
-            	-(core::windowSize.x / core::pixelPerMeter / 2) };
-            body.position += body.velocity * dt.asSeconds();
-
             
-            /*Ball ball = ballManager_.GetComponent(2);
-            ball.position += body.velocity * dt.asSeconds();
-            ballManager_.SetComponent(entity, ball);*/
-           
-
-           
-
-            if (body.position.x <= min_pos.x + Body::radius/core::pixelPerMeter)
+            core::Vec2f maxPos{(core::windowSize.x / core::pixelPerMeter/2), (core::windowSize.y / core::pixelPerMeter/2) };
+            core::Vec2f minPos{ -(core::windowSize.x / core::pixelPerMeter/2), -(core::windowSize.y / core::pixelPerMeter/2) };
+            auto body = circleManager_.GetComponent(entity);
+            body.position += body.velocity * dt.asSeconds();
+            
+        	if(body.position.x <= minPos.x + body.radius)
+        	{
+                body.position.x = minPos.x + body.radius;
+                body.velocity.x = -body.velocity.x * body.bounciness;
+        	}
+        	if(body.position.y <= minPos.y + body.radius)
+        	{
+                body.position.y = minPos.y + body.radius;
+                body.velocity.y = -body.velocity.y * body.bounciness;
+        	}
+            if (body.position.x >= maxPos.x - body.radius)
             {
-                body.position.x = min_pos.x + Body::radius / core::pixelPerMeter;
-                body.velocity.x = 15;
+                body.position.x = maxPos.x - body.radius;
+                body.velocity.x = -body.velocity.x * body.bounciness;
             }
-            if (body.position.y <= min_pos.y + Body::radius / core::pixelPerMeter)            //correct position and velocity
+            if (body.position.y >= maxPos.y - body.radius)
             {
-                body.position.y = min_pos.y + Body::radius / core::pixelPerMeter;
-                body.velocity.y = -body.velocity.y/2;
+                body.position.y = maxPos.y - body.radius;
+                body.velocity.y = -body.velocity.y * body.bounciness;
             }
-            if (body.position.x >= max_pos.x - Body::radius / core::pixelPerMeter)
-            {
-                body.position.x = max_pos.x - Body::radius / core::pixelPerMeter;
-                body.velocity.x = -15;
-            }
-            if (body.position.y >= max_pos.y - Body::radius / core::pixelPerMeter)
-            {
-                body.position.y = max_pos.y - Body::radius / core::pixelPerMeter;
-                body.velocity.y = -10;
-            }
-            bodyManager_.SetComponent(entity, body);
-            auto body1 = bodyManager_.GetComponent(0);
-            auto body2 = bodyManager_.GetComponent(1);
-        	
-            if (Intersect(body1, body2))//Resolve intersections between two pads
-            {
-                ResolveIntersect(body1, body2);
-                bodyManager_.SetComponent(0, body1);
-                bodyManager_.SetComponent(1, body2);
-            }
-          
+            circleManager_.SetComponent(entity, body);
         }
         for (core::Entity entity = 0; entity < entityManager_.GetEntitiesSize(); entity++)
         {
-            if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(core::ComponentType::BODY2D) | static_cast<core::EntityMask>(core::ComponentType::BOX_COLLIDER2D))) {
+            if (!entityManager_.HasComponent(entity,
+                                                   static_cast<core::EntityMask>(core::ComponentType::CIRCLE_BODY2D))
+                                                    ||
+                entityManager_.HasComponent(entity, static_cast<core::EntityMask>(ComponentType::DESTROYED)))
                 continue;
-            }
             for (core::Entity otherEntity = entity; otherEntity < entityManager_.GetEntitiesSize(); otherEntity++)
             {
                 if (entity == otherEntity)
-                {
                     continue;
-                }
+                if (!entityManager_.HasComponent(otherEntity,
+                                                 static_cast<core::EntityMask>(core::ComponentType::CIRCLE_BODY2D)) ||
+                    entityManager_.HasComponent(entity, static_cast<core::EntityMask>(ComponentType::DESTROYED)))
+                    continue;
+                 CircleBody& body1 = circleManager_.GetComponent(entity);
+
+                 CircleBody& body2 = circleManager_.GetComponent(otherEntity);
+
+               if(BodyIntersect(body1, body2))
+               {
+                   ResolveBodyIntersect(body1, body2);
+                   onTriggerAction_.Execute(entity, otherEntity);
+               }
                    
-                if (!entityManager_.HasComponent(otherEntity, static_cast<core::EntityMask>(core::ComponentType::BODY2D) | static_cast<core::EntityMask>(core::ComponentType::BOX_COLLIDER2D))) {
-
-                    continue;
-                }
-            	
-               
-                const Body& body1 = bodyManager_.GetComponent(entity);
-                const Box& box1 = boxManager_.GetComponent(entity);
-
-                const Body& body2 = bodyManager_.GetComponent(otherEntity);
-                const Box& box2 = boxManager_.GetComponent(otherEntity);
-
-
 
             }
-
         }
-  
-        
     }
 
 
-   
-
-    void PhysicsManager::SetBody(core::Entity entity, const Body& body)
-    {
-        bodyManager_.SetComponent(entity, body);
-    }
-
-    const Body& PhysicsManager::GetBody(core::Entity entity) const
-    {
-        return bodyManager_.GetComponent(entity);
-    }
-
-    void PhysicsManager::AddBody(core::Entity entity)
-    {
-        bodyManager_.AddComponent(entity);
-    }
-
-    void PhysicsManager::AddBox(core::Entity entity)
-    {
-        boxManager_.AddComponent(entity);
-    }
-
-    void PhysicsManager::SetBox(core::Entity entity, const Box& box)
-    {
-        boxManager_.SetComponent(entity, box);
-    }
-
-    const Box& PhysicsManager::GetBox(core::Entity entity) const
-    {
-        return boxManager_.GetComponent(entity);
-    }
     void PhysicsManager::AddCircle(core::Entity entity)
     {
-        ballManager_.AddComponent(entity);
+        circleManager_.AddComponent(entity);
     }
 
-    void PhysicsManager::SetCircle(core::Entity entity, const Ball& ball)
+    void PhysicsManager::SetCircle(core::Entity entity, const CircleBody& circle)
     {
-        ballManager_.SetComponent(entity, ball);
+        circleManager_.SetComponent(entity, circle);
     }
 
-    const Ball& PhysicsManager::GetCircle(core::Entity entity) const
+    const CircleBody& PhysicsManager::GetCircle(core::Entity entity) const
     {
-        return  ballManager_.GetComponent(entity);
+        return circleManager_.GetComponent(entity);
     }
+
     void PhysicsManager::RegisterTriggerListener(OnTriggerInterface& collisionInterface)
     {
        
@@ -244,7 +149,6 @@ namespace game
 
     void PhysicsManager::CopyAllComponents(const PhysicsManager& physicsManager)
     {
-        bodyManager_.CopyAllComponents(physicsManager.bodyManager_.GetAllComponents());
-        boxManager_.CopyAllComponents(physicsManager.boxManager_.GetAllComponents());
+        circleManager_.CopyAllComponents(physicsManager.circleManager_.GetAllComponents());
     }
 }

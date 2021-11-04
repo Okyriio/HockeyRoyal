@@ -113,7 +113,7 @@ namespace game
         const core::Vec2f speed = { 0.0f ,0.0f };
         const auto radius = 30.0f;
         const auto mass = 30.0f;
-        gameManager_.SpawnPlayer(playerNumber, pos, radius, speed, mass);
+        gameManager_.SpawnPlayer(playerNumber, pos);
         SendReliablePacket(std::move(spawnPlayer));
     }
 }

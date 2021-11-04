@@ -28,8 +28,8 @@ namespace game
     public:
         GameManager();
         virtual ~GameManager() = default;
-        virtual void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass);
-       /* core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);*/
+        virtual void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position);
+        core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);
         [[nodiscard]] core::Entity GetEntityFromPlayerNumber(PlayerNumber playerNumber) const;
         [[nodiscard]] Frame GetCurrentFrame() const { return currentFrame_; }
         [[nodiscard]] Frame GetLastValidateFrame() const { return rollbackManager_.GetLastValidateFrame(); }
@@ -73,12 +73,12 @@ namespace game
         [[nodiscard]] sf::Vector2u GetWindowSize() const { return windowSize_; }
         void Draw(sf::RenderTarget& target) override;
         void SetClientPlayer(PlayerNumber clientPlayer);
-        void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position, float radius, core::Vec2f velocity, float mass) override;
-       /* core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);*/
+        void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position) override;
+        core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);
         void FixedUpdate();
         void SetPlayerInput(PlayerNumber playerNumber, std::uint8_t playerInput, std::uint32_t inputFrame) override;
         void DrawImGui() override;
-        void ConfirmValidateFrame(Frame newValidateFrame, const std::array<PhysicsState, maxPlayerNmb>& physicsStates);
+        void ConfirmValidateFrame(Frame newValidateFrame, const std::array<PhysicsState, maxPlayerNmb>& physicsStates, PhysicsState physicBallState);
         [[nodiscard]] PlayerNumber GetPlayerNumber() const { return clientPlayer_; }
         void WinGame(PlayerNumber winner) override;
         [[nodiscard]] std::uint32_t GetState() const { return state_; }

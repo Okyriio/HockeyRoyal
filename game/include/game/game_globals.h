@@ -15,7 +15,8 @@ namespace game
     const PlayerNumber INVALID_PLAYER = std::numeric_limits<PlayerNumber>::max();
     using ClientId = std::uint16_t;
     using Frame = std::uint32_t;
-
+    const float ballScale = 0.5f;
+    const short playerPoints = 0;
     const std::uint32_t maxPlayerNmb = 2;
    
     const float playerSpeed = 33.0f;
@@ -50,6 +51,7 @@ namespace game
     enum class ComponentType : core::EntityMask
     {
         PLAYER_CHARACTER = static_cast<core::EntityMask>(core::ComponentType::OTHER_TYPE),
+        BALL = static_cast<core::EntityMask>(core::ComponentType::OTHER_TYPE) << 1u,
         PLAYER_INPUT = static_cast<core::EntityMask>(core::ComponentType::OTHER_TYPE) << 3u,
     	DESTROYED = static_cast<core::EntityMask>(core::ComponentType::OTHER_TYPE)<< 4u,
        

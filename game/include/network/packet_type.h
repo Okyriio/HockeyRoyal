@@ -173,17 +173,19 @@ namespace game
     struct ValidateFramePacket : TypedPacket<PacketType::VALIDATE_STATE>
     {
         std::array<std::uint8_t, sizeof(Frame)> newValidateFrame{};
-        std::array<std::uint8_t, sizeof(PhysicsState)* maxPlayerNmb> physicsState{};
+        std::array<std::uint8_t, sizeof(PhysicsState)* maxPlayerNmb> physicsPlayerState{};
+        std::array<std::uint8_t, sizeof(PhysicsState)> physicsBallState{};
+    	
     };
 
     inline sf::Packet& operator<<(sf::Packet& packet, const ValidateFramePacket& validateFramePacket)
     {
-        return packet << validateFramePacket.newValidateFrame << validateFramePacket.physicsState;
+        return packet << validateFramePacket.newValidateFrame << validateFramePacket.physicsPlayerState << validateFramePacket.physicsBallState;
     }
 
     inline sf::Packet& operator>>(sf::Packet& packet, ValidateFramePacket& ValidateFramePacket)
     {
-        return packet >> ValidateFramePacket.newValidateFrame >> ValidateFramePacket.physicsState;
+        return packet >> ValidateFramePacket.newValidateFrame >> ValidateFramePacket.physicsPlayerState << ValidateFramePacket.physicsBallState;
     }
 
     struct WinGamePacket : TypedPacket<PacketType::WIN_GAME>

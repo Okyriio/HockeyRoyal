@@ -29,8 +29,10 @@ namespace game
 
             if (lastPlayerNumber_ == maxPlayerNmb)
             {
+
                 auto startGamePacket = std::make_unique<StartGamePacket>();
                 startGamePacket->packetType = PacketType::START_GAME;
+                gameManager_.SpawnBall(2, { 0.f,0.f }, { 0.f,0.0f });
                 using namespace std::chrono;
                 const auto ms = (duration_cast<duration<unsigned long long, std::milli>>(
                     system_clock::now().time_since_epoch()
@@ -83,17 +85,23 @@ namespace game
                 for (PlayerNumber i = 0; i < maxPlayerNmb; i++)
                 {
                     auto physicsState = gameManager_.GetRollbackManager().GetValidatePhysicsState(i);
-                    const unsigned char* statePtr = reinterpret_cast<const std::uint8_t*>(&physicsState);
+                    const auto* statePtr = reinterpret_cast<const std::uint8_t*>(&physicsState);
                     for (size_t j = 0; j < sizeof(PhysicsState); j++)
                     {
-                        validatePacket->physicsState[i * sizeof(PhysicsState) + j] = statePtr[j];
+                        validatePacket->physicsPlayerState[i * sizeof(PhysicsState) + j] = statePtr[j];
                     }
+                }
+                auto physicsBallState = gameManager_.GetRollbackManager().GetValidatePhysicsStateBall();
+                const auto* statePtr = reinterpret_cast<const std::uint8_t*>(&physicsBallState);
+                for (size_t j = 0; j < sizeof(PhysicsState); j++)
+                {
+                    validatePacket->physicsBallState[j] = statePtr[j];
                 }
                 SendUnreliablePacket(std::move(validatePacket));
                 const auto winner = gameManager_.CheckWinner();
                 if (winner != INVALID_PLAYER)
                 {
-                    winner + 1;
+                    core::LogDebug(fmt::format("Server declares P{} a winner", winner + 1));
                     auto winGamePacket = std::make_unique<WinGamePacket>();
                     winGamePacket->winner = winner;
                     SendReliablePacket(std::move(winGamePacket));
