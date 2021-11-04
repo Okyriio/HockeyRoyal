@@ -94,6 +94,7 @@ namespace game
                 body.position.y = maxPos.y - body.radius;
                 body.velocity.y = -body.velocity.y * body.bounciness;
             }
+          
             circleManager_.SetComponent(entity, body);
         }
         for (core::Entity entity = 0; entity < entityManager_.GetEntitiesSize(); entity++)
@@ -115,6 +116,7 @@ namespace game
 
                  CircleBody& body2 = circleManager_.GetComponent(otherEntity);
 
+                
                if(BodyIntersect(body1, body2))
                {
                    ResolveBodyIntersect(body1, body2);

@@ -276,6 +276,7 @@ namespace game
 		CircleBody playerBody;
 		playerBody.position = position;
 		playerBody.radius = 0.68f;
+		playerBody.bounciness = 1.0f;
 		PlayerCharacter playerCharacter;
 		playerCharacter.playerNumber = playerNumber;
 

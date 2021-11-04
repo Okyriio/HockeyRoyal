@@ -13,6 +13,11 @@ namespace core
         components_[entity].setTexture(texture);
     }
 
+    void SpriteManager::SetTextureBack(Entity entity, const sf::Texture& texture)
+    {
+        components_[entity].setTexture(texture);
+    }
+
     void SpriteManager::Draw(sf::RenderTarget& window)
     {
         for (Entity entity = 0; entity < components_.size(); entity++)

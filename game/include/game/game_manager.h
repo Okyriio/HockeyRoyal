@@ -30,11 +30,12 @@ namespace game
         virtual ~GameManager() = default;
         virtual void SpawnPlayer(PlayerNumber playerNumber, core::Vec2f position);
         core::Entity SpawnBall(PlayerNumber playerNumber, core::Vec2f position, core::Vec2f velocity);
+        
         [[nodiscard]] core::Entity GetEntityFromPlayerNumber(PlayerNumber playerNumber) const;
         [[nodiscard]] Frame GetCurrentFrame() const { return currentFrame_; }
         [[nodiscard]] Frame GetLastValidateFrame() const { return rollbackManager_.GetLastValidateFrame(); }
         [[nodiscard]] const core::TransformManager& GetTransformManager() const { return transformManager_; }
-        [[nodiscard]] const RollbackManager& GetRollbackManager() const { return rollbackManager_; }
+        [[nodiscard]] const  RollbackManager& GetRollbackManager() const { return rollbackManager_; }
         virtual void SetPlayerInput(PlayerNumber playerNumber, std::uint8_t playerInput, std::uint32_t inputFrame);
         /*
          * \brief Called by the server to validate a frame
@@ -96,7 +97,8 @@ namespace game
         unsigned long long startingTime_ = 0;
         std::uint32_t state_ = 0;
 
-        sf::Texture shipTexture_;
+        sf::Texture padTexture_;
+        sf::Texture backTexture_ ;
         sf::Texture ballTexture_;
         sf::Font font_;
 
