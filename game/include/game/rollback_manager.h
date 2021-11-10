@@ -45,6 +45,7 @@ namespace game
         [[nodiscard]] Frame GetCurrentFrame() const { return currentFrame_; }
         [[nodiscard]] core::TransformManager& GetTransformManager()  { return currentTransformManager_; }
         [[nodiscard]] const PlayerCharacterManager& GetPlayerCharacterManager() const { return currentPlayerManager_; }
+        [[nodiscard]] const  BallManager& GetLastBallManager() const  { return lastValidateBallManager_; }
         void SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position);
         /**
          * \brief This function does not destroy the entity definitely, but puts the DESTROY flag
@@ -69,8 +70,6 @@ namespace game
         PhysicsManager lastValidatePhysicsManager_;
         PlayerCharacterManager lastValidatePlayerManager_;
         BallManager lastValidateBallManager_;
-
-
 
         Frame lastValidateFrame_ = 0; //Confirm frame
         Frame currentFrame_ = 0;

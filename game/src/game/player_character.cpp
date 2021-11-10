@@ -7,7 +7,7 @@ namespace game
         ComponentManager(entityManager),
         physicsManager_(physicsManager),
         gameManager_(gameManager)
-
+       
     {
 
     }
@@ -33,7 +33,7 @@ namespace game
 
             const auto accelerationV = ((up ? 0.0f : -10.0f) + (down ? 0.0f : 10.0f)) * dirV;
             const auto accelerationH = ((left ? -10.0f : 0.0f) + (right ? 10.0f : 0.0f)) * dirH;
-
+           
             playerBody.velocity = (accelerationH + accelerationV) * dt.asSeconds();
           
 

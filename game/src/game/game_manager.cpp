@@ -66,11 +66,10 @@ namespace game
         return entity;
     }
 
-  
-
     PlayerNumber GameManager::CheckWinner() const
     {
-        
+        auto winningPoints = 10;
+        int WinPoints = 0;
         PlayerNumber winner = INVALID_PLAYER;
         const auto& playerManager = rollbackManager_.GetPlayerCharacterManager();
         for (core::Entity entity = 0; entity < entityManager_.GetEntitiesSize(); entity++)
@@ -78,10 +77,16 @@ namespace game
             if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(ComponentType::PLAYER_CHARACTER)))
                 continue;
             const auto& player = playerManager.GetComponent(entity);
+            if (player.WinPoints == winningPoints)
+            {
+                WinPoints++;
+                winner = player.playerNumber;
+            }
         }
 
-        return playerPoints == 5 ? winner : INVALID_PLAYER;
+        return WinPoints == 1 ? winner : INVALID_PLAYER;
     }
+
 
     void GameManager::WinGame(PlayerNumber winner)
     {
@@ -102,10 +107,12 @@ namespace game
         {
             core::LogError("Could not load ship sprite");
         }
+    	//load background
         if (!backTexture_.loadFromFile("data/sprites/background.png"))
         {
             core::LogError("Could not load background sprite");
         }
+    	//load ball
         if (!ballTexture_.loadFromFile("data/sprites/ball.png"))
         {
             core::LogError("Could not load ball sprite");
@@ -116,7 +123,7 @@ namespace game
             core::LogError("Could not load font");
         }
         textRenderer_.setFont(font_);
-    	
+
         auto bgEntity = entityManager_.CreateEntity();
         transformManager_.AddComponent(bgEntity);
         transformManager_.SetScale(bgEntity, core::Vec2f{ 1,1 });
@@ -130,7 +137,7 @@ namespace game
         spriteManager_.AddComponent(bgEntity);
         spriteManager_.SetTexture(bgEntity, backTexture_);
         spriteManager_.SetOrigin(bgEntity, sf::Vector2f(backTexture_.getSize()) / 2.0f);
-        
+
 
     }
 
@@ -187,7 +194,7 @@ namespace game
         target.setView(cameraView_);
 
         spriteManager_.Draw(target);
-        
+
         // Draw texts on screen
         target.setView(originalView_);
         if (state_ & FINISHED)
@@ -249,7 +256,8 @@ namespace game
         }
         else
         {
-            std::string points  = fmt::format("Player Points {}", playerPoints );
+
+            std::string points;
             const auto& playerManager = rollbackManager_.GetPlayerCharacterManager();
             for (PlayerNumber playerNumber = 0; playerNumber < maxPlayerNmb; playerNumber++)
             {
@@ -258,6 +266,7 @@ namespace game
                 {
                     continue;
                 }
+                points += fmt::format("P{} points: {} ", playerNumber + 1, playerManager.GetComponent(playerEntity).WinPoints);
             }
             textRenderer_.setFillColor(sf::Color::White);
             textRenderer_.setString(points);
@@ -265,7 +274,6 @@ namespace game
             textRenderer_.setCharacterSize(20);
             target.draw(textRenderer_);
         }
-
     }
 
     void ClientGameManager::SetClientPlayer(PlayerNumber clientPlayer)
@@ -279,7 +287,7 @@ namespace game
 
         GameManager::SpawnPlayer(playerNumber, position);
         const auto entity = GetEntityFromPlayerNumber(playerNumber);
-        
+
         spriteManager_.AddComponent(entity);
         spriteManager_.SetTexture(entity, padTexture_);
         spriteManager_.SetOrigin(entity, sf::Vector2f(padTexture_.getSize()) / 2.0f);

@@ -15,7 +15,7 @@ namespace game
 		currentPhysicsManager_(entityManager), currentPlayerManager_(entityManager, currentPhysicsManager_, gameManager_),
 		lastValidatePhysicsManager_(entityManager),
 		lastValidatePlayerManager_(entityManager, lastValidatePhysicsManager_, gameManager_),
-		currentBallManager_(entityManager, gameManager, currentPhysicsManager_), lastValidateBallManager_(entityManager, gameManager, currentPhysicsManager_)
+		currentBallManager_(entityManager, gameManager, currentPhysicsManager_, currentPlayerManager_), lastValidateBallManager_(entityManager, gameManager, currentPhysicsManager_, currentPlayerManager_)
 	{
 		for (auto& input : inputs_)
 		{

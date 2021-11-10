@@ -17,7 +17,7 @@ namespace game
     using Frame = std::uint32_t;
    
     const float ballScale = 0.5f;
-    const short playerPoints = 0;
+
     const std::uint32_t maxPlayerNmb = 2;
    
     const float playerSpeed = 33.0f;
