@@ -63,8 +63,8 @@ namespace game
         std::array<ClientInfo, maxPlayerNmb> clientInfoMap_{};
 
 
-        unsigned short tcpPort_ = 12345;
-        unsigned short udpPort_ = 12345;
+        unsigned short tcpPort_ = 33333;
+        unsigned short udpPort_ = 33333;
         std::uint32_t lastSocketIndex_ = 0;
         std::uint8_t status_ = 0;
     };

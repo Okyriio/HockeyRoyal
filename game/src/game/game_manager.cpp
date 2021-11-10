@@ -77,7 +77,7 @@ namespace game
             if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(ComponentType::PLAYER_CHARACTER)))
                 continue;
             const auto& player = playerManager.GetComponent(entity);
-            if (player.WinPoints == winningPoints)
+            if (player.WinPoints >= winningPoints)
             {
                 WinPoints++;
                 winner = player.playerNumber;

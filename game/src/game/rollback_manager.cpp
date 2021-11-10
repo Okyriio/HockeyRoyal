@@ -217,6 +217,7 @@ namespace game
 			assert(false && "Ball physics State are not equal");
 		}
 	}
+	
 	PhysicsState RollbackManager::GetValidatePhysicsState(PlayerNumber playerNumber) const
 	{
 		PhysicsState state = 0;
