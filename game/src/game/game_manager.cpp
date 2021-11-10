@@ -243,10 +243,11 @@ namespace game
                     ).count();
                 if (ms < startingTime_)
                 {
-                    const std::string countDownText = fmt::format("Starts in {}", ((startingTime_ - ms) / 1000 + 1));
+                    const std::string countDownText = fmt::format("Starts in {} \n First to 10 points", ((startingTime_ - ms) / 1000 + 1));
+                    
                     textRenderer_.setFillColor(sf::Color::White);
                     textRenderer_.setString(countDownText);
-                    textRenderer_.setCharacterSize(50);
+                    textRenderer_.setCharacterSize(40);
                     const auto textBounds = textRenderer_.getLocalBounds();
                     textRenderer_.setPosition(windowSize_.x / 2.0f - textBounds.width / 2.0f,
                         windowSize_.y / 2.0f - textBounds.height / 2.0f);
