@@ -124,6 +124,7 @@ namespace game
         }
         textRenderer_.setFont(font_);
 
+    	//loads the backgrounds (the goals)
         auto bgEntity = entityManager_.CreateEntity();
         transformManager_.AddComponent(bgEntity);
         transformManager_.SetScale(bgEntity, core::Vec2f{ 1,1 });

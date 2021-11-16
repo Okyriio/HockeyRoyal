@@ -11,7 +11,7 @@ namespace game
     }
 
     
-	
+	//Resolves every collision when contact is made
     void PhysicsManager::ResolveBodyIntersect(CircleBody& body1, CircleBody& body2)
     {
 	    const float v1n = ComputeNormal(body1.position, ContactPoint(body1, body2)).x * body1.velocity.x +
@@ -57,6 +57,7 @@ namespace game
         return std::sqrt(dx * dx + dy * dy);
     }
 
+	//Checks if intersection is made
     bool PhysicsManager::BodyIntersect(CircleBody body1, CircleBody body2)
     {
         return CalculateDistance(body1, body2) < (body1.radius + body2.radius);
@@ -73,7 +74,8 @@ namespace game
             core::Vec2f minPos{ -(core::windowSize.x / core::pixelPerMeter/2), -(core::windowSize.y / core::pixelPerMeter/2) };
             auto body = circleManager_.GetComponent(entity);
             body.position += body.velocity * dt.asSeconds();
-            
+
+        	//Sets the borders of the game, no body can get past these
         	if(body.position.x <= minPos.x + body.radius)
         	{
                 body.position.x = minPos.x + body.radius;
