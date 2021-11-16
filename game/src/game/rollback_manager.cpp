@@ -15,7 +15,8 @@ namespace game
 		currentPhysicsManager_(entityManager), currentPlayerManager_(entityManager, currentPhysicsManager_, gameManager_),
 		lastValidatePhysicsManager_(entityManager),
 		lastValidatePlayerManager_(entityManager, lastValidatePhysicsManager_, gameManager_),
-		currentBallManager_(entityManager, gameManager, currentPhysicsManager_, currentPlayerManager_), lastValidateBallManager_(entityManager, gameManager, currentPhysicsManager_, currentPlayerManager_)
+		currentBallManager_(entityManager, gameManager, currentPhysicsManager_, currentPlayerManager_),
+		lastValidateBallManager_(entityManager, gameManager, currentPhysicsManager_, currentPlayerManager_)
 	{
 		for (auto& input : inputs_)
 		{
@@ -204,7 +205,7 @@ namespace game
 		ValidateFrame(newValidateFrame);
 		for (PlayerNumber playerNumber = 0; playerNumber < maxPlayerNmb; playerNumber++)
 		{
-			const PhysicsState lastPhysicsState = GetValidatePhysicsState(playerNumber);
+			const PhysicsState lastPhysicsState = GetValidatePhysicsStatePlayer(playerNumber);
 			if (serverPhysicsState[playerNumber] != lastPhysicsState)
 			{
 				assert(false && "Physics State are not equal");
@@ -218,7 +219,7 @@ namespace game
 		}
 	}
 	
-	PhysicsState RollbackManager::GetValidatePhysicsState(PlayerNumber playerNumber) const
+	PhysicsState RollbackManager::GetValidatePhysicsStatePlayer(PlayerNumber playerNumber) const
 	{
 		PhysicsState state = 0;
 		const core::Entity playerEntity = gameManager_.GetEntityFromPlayerNumber(playerNumber);
@@ -307,19 +308,6 @@ namespace game
 
 
 
-	void RollbackManager::DestroyEntity(core::Entity entity)
-	{
-		//we don't need to save a bullet that has been created in the time window
-		if (std::find_if(createdEntities_.begin(), createdEntities_.end(), [entity](auto newEntity)
-			{
-				return newEntity.entity == entity;
-			}) != createdEntities_.end())
-		{
-			entityManager_.DestroyEntity(entity);
-			return;
-		}
-			entityManager_.AddComponent(entity, static_cast<core::EntityMask>(ComponentType::DESTROYED));
-	}
 
 	void RollbackManager::SpawnBall(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position, core::Vec2f velocity)
 	{

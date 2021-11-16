@@ -38,7 +38,7 @@ namespace game
          */
         void ConfirmFrame(Frame newValidatedFrame, const std::array<PhysicsState, maxPlayerNmb>& serverPhysicsState, PhysicsState
             serverPhysicsBallState);
-        [[nodiscard]] PhysicsState GetValidatePhysicsState(PlayerNumber playerNumber) const;
+        [[nodiscard]] PhysicsState GetValidatePhysicsStatePlayer(PlayerNumber playerNumber) const;
         [[nodiscard]] PhysicsState GetValidatePhysicsStateBall() const;
         [[nodiscard]] Frame GetLastValidateFrame() const { return lastValidateFrame_; }
         [[nodiscard]] Frame GetLastReceivedFrame(PlayerNumber playerNumber) const { return lastReceivedFrame_[playerNumber]; }
@@ -47,12 +47,9 @@ namespace game
         [[nodiscard]] const PlayerCharacterManager& GetPlayerCharacterManager() const { return currentPlayerManager_; }
         [[nodiscard]] const  BallManager& GetLastBallManager() const  { return lastValidateBallManager_; }
         void SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position);
-        /**
-         * \brief This function does not destroy the entity definitely, but puts the DESTROY flag
-         */
-        void DestroyEntity(core::Entity entity);
         void SpawnBall(PlayerNumber playerNumber, core::Entity entity, core::Vec2f position, core::Vec2f velocity);
         void SpawnPlayer(PlayerNumber playerNumber, core::Entity entity, const core::Vec2f& position, const core::Vec2f& velocity, float mass);
+    	
     private:
         PlayerInput GetInputAtFrame(PlayerNumber playerNumber, Frame frame);
         GameManager& gameManager_;

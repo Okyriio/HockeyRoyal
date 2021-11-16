@@ -38,9 +38,10 @@ namespace game
                 playerManager_.SetComponent(entity, playerCharacter2);
             }
 
-            //Checks if the ball is in the goals
+            //This makes it so only the ball counts in the goals
             if (!entityManager_.HasComponent(entity, static_cast<core::EntityMask>(ComponentType::PLAYER_CHARACTER)))
             {
+                //Checks if the ball is in the goals
                 if (ballBody.position.y == minPos.y + ballBody.radius && 
                     ballBody.position.x >= goalSizeLeft && ballBody.position.x <= goalSizeRight)
                 {

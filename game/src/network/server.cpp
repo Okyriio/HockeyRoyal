@@ -84,7 +84,7 @@ namespace game
                 //copy physics state
                 for (PlayerNumber i = 0; i < maxPlayerNmb; i++)
                 {
-                    auto physicsState = gameManager_.GetRollbackManager().GetValidatePhysicsState(i);
+                    auto physicsState = gameManager_.GetRollbackManager().GetValidatePhysicsStatePlayer(i);
                     const auto* statePtr = reinterpret_cast<const std::uint8_t*>(&physicsState);
                     for (size_t j = 0; j < sizeof(PhysicsState); j++)
                     {
